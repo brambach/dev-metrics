@@ -1,4 +1,4 @@
-import { GitHubUser, ContributionDay } from './github/types'
+import { GitHubUser, ContributionDay, Week, Repository } from './github/types'
 
 export function calculateEngineeringScore(user: GitHubUser) {
   const { contributionsCollection } = user
@@ -58,7 +58,7 @@ export function calculateStreak(contributionDays: ContributionDay[]): number {
   return streak
 }
 
-export function transformToChartData(weeks: any[]) {
+export function transformToChartData(weeks: Week[]) {
   const last30Days = weeks
     .flatMap(week => week.contributionDays)
     .slice(-30)
@@ -69,7 +69,7 @@ export function transformToChartData(weeks: any[]) {
   }))
 }
 
-export function getLanguageBreakdown(repositories: any[]) {
+export function getLanguageBreakdown(repositories: Repository[]) {
   const languageCounts: Record<string, number> = {}
 
   repositories.forEach(repo => {

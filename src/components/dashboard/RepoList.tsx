@@ -1,4 +1,4 @@
-import { Star, GitFork, LayoutDashboard, Server, BrainCircuit } from 'lucide-react'
+import { Star, GitFork, LayoutDashboard, Server, BrainCircuit, LucideIcon } from 'lucide-react'
 
 interface Repository {
   name: string
@@ -15,7 +15,7 @@ interface RepoListProps {
   repos: Repository[]
 }
 
-const iconMap: Record<string, any> = {
+const iconMap: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard,
   api: Server,
   ml: BrainCircuit,

@@ -26,7 +26,12 @@ export function EngineeringScore({ score, breakdown }: EngineeringScoreProps) {
   return (
     <div className="animate-enter delay-300 bg-surface border border-border rounded-xl p-10 flex flex-col items-center justify-center relative overflow-hidden subtle-shadow group hover:border-zinc-700 smooth-transition">
       <div className="relative w-[280px] h-[280px] flex items-center justify-center">
-        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 300 300">
+        <svg
+          className="w-full h-full transform -rotate-90"
+          viewBox="0 0 300 300"
+          role="img"
+          aria-label={`Engineering score: ${score} out of 100`}
+        >
           <circle cx="150" cy="150" r="120" fill="none" stroke="#262626" strokeWidth="8" />
           <circle
             ref={circleRef}

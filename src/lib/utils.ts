@@ -1,0 +1,89 @@
+import { GitHubUser, ContributionDay } from './github/types'
+
+export function calculateEngineeringScore(user: GitHubUser) {
+  const { contributionsCollection } = user
+  const { contributionCalendar } = contributionsCollection
+
+  // Calculate active days in last 30 days
+  const last30Days = contributionCalendar.weeks
+    .flatMap(week => week.contributionDays)
+    .slice(-30)
+  const activeDays = last30Days.filter(day => day.contributionCount > 0).length
+
+  // Consistency: 0-25 points based on active days in last 30
+  const consistency = Math.round((activeDays / 30) * 25)
+
+  // Volume: 0-25 points based on total contributions (capped at 100/month)
+  const totalContributions = contributionsCollection.totalCommitContributions +
+    contributionsCollection.totalPullRequestContributions +
+    contributionsCollection.totalIssueContributions
+  const volume = Math.round(Math.min(totalContributions / 100, 1) * 25)
+
+  // Impact: 0-25 points based on PR ratio
+  const commits = contributionsCollection.totalCommitContributions || 1
+  const prs = contributionsCollection.totalPullRequestContributions
+  const prRatio = prs / commits
+  const impact = Math.round(Math.min(prRatio, 1) * 25)
+
+  // Recency: 0-25 points based on recent activity
+  const contributedToday = last30Days[last30Days.length - 1]?.contributionCount > 0
+  const daysAgo = last30Days.reverse().findIndex(day => day.contributionCount > 0)
+  const recency = contributedToday ? 25 : Math.max(0, 25 - (daysAgo * 2))
+
+  const score = consistency + volume + impact + recency
+
+  return {
+    score: Math.min(score, 100),
+    breakdown: {
+      consistency: Math.round((consistency / 25) * 100),
+      volume: Math.round((volume / 25) * 100),
+      impact: Math.round((impact / 25) * 100),
+      recency: Math.round((recency / 25) * 100),
+    }
+  }
+}
+
+export function calculateStreak(contributionDays: ContributionDay[]): number {
+  const sortedDays = [...contributionDays].reverse()
+  let streak = 0
+
+  for (const day of sortedDays) {
+    if (day.contributionCount > 0) {
+      streak++
+    } else {
+      break
+    }
+  }
+
+  return streak
+}
+
+export function transformToChartData(weeks: any[]) {
+  const last30Days = weeks
+    .flatMap(week => week.contributionDays)
+    .slice(-30)
+
+  return last30Days.map(day => ({
+    date: new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    count: day.contributionCount
+  }))
+}
+
+export function getLanguageBreakdown(repositories: any[]) {
+  const languageCounts: Record<string, number> = {}
+
+  repositories.forEach(repo => {
+    if (repo.primaryLanguage) {
+      const lang = repo.primaryLanguage.name
+      languageCounts[lang] = (languageCounts[lang] || 0) + 1
+    }
+  })
+
+  return Object.entries(languageCounts)
+    .map(([name, count]) => ({
+      name,
+      value: count,
+      color: repositories.find(r => r.primaryLanguage?.name === name)?.primaryLanguage?.color || '#FFED4E'
+    }))
+    .sort((a, b) => b.value - a.value)
+}

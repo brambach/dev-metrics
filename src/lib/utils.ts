@@ -44,14 +44,33 @@ export function calculateEngineeringScore(user: GitHubUser) {
 }
 
 export function calculateStreak(contributionDays: ContributionDay[]): number {
-  const sortedDays = [...contributionDays].reverse()
+  if (contributionDays.length === 0) return 0
+
+  const sortedDays = [...contributionDays].reverse() // Most recent first
   let streak = 0
 
-  for (const day of sortedDays) {
-    if (day.contributionCount > 0) {
+  // Check if the most recent day is today (or very recent)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const mostRecentDay = new Date(sortedDays[0].date)
+  mostRecentDay.setHours(0, 0, 0, 0)
+
+  const isTodayOrYesterday = Math.abs(today.getTime() - mostRecentDay.getTime()) <= 24 * 60 * 60 * 1000
+
+  // Start counting from the first day, but skip today if it has no contributions
+  // (streak should continue if you had activity yesterday but not yet today)
+  let startIndex = 0
+  if (isTodayOrYesterday && sortedDays[0].contributionCount === 0) {
+    startIndex = 1 // Skip today if it's incomplete
+  }
+
+  // Count consecutive days with contributions
+  for (let i = startIndex; i < sortedDays.length; i++) {
+    if (sortedDays[i].contributionCount > 0) {
       streak++
     } else {
-      break
+      break // Stop at first day with no contributions
     }
   }
 
